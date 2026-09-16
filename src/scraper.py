@@ -19,8 +19,9 @@ except ImportError:  # pragma: no cover
     ephem = None
 
 try:
-    from hijri_converter import Hijri
+    from hijri_converter import Gregorian, Hijri
 except ImportError:  # pragma: no cover
+    Gregorian = None
     Hijri = None
 
 try:
@@ -90,13 +91,13 @@ def scrape_religious_events(religions: list[str], start_year: int, end_year: int
                 _event('religious', 'Christianity', 'Holiday: Christmas Day', date(year, 12, 25), True),
             ])
         if 'islam' in selected:
-            for hijri_year in range(year - 579, year - 577):
+            for hijri_year in _candidate_hijri_years(year):
                 for name, (month, day_value) in ISLAMIC_DATES.items():
                     converted = _hijri_to_gregorian(hijri_year, month, day_value)
                     if converted and converted.year == year:
                         events.append(_event('religious', 'Islam', name, converted, True))
         if 'judaism' in selected:
-            for hebrew_year in range(year + 3760, year + 3762):
+            for hebrew_year in _candidate_hebrew_years(year):
                 for name, (month, day_value) in JEWISH_DATES.items():
                     converted = _hebrew_to_gregorian(hebrew_year, month, day_value)
                     if converted and converted.year == year:
@@ -262,9 +263,25 @@ def _hijri_to_gregorian(year: int, month: int, day_value: int) -> date | None:
         return None
 
 
+def _candidate_hijri_years(year: int) -> list[int]:
+    if Gregorian is not None:
+        start_year = Gregorian(year, 1, 1).to_hijri().year
+        end_year = Gregorian(year, 12, 31).to_hijri().year
+        return sorted({start_year, end_year})
+    return [year - 579, year - 578]
+
+
 def _hebrew_to_gregorian(year: int, month: int, day_value: int) -> date | None:
     if hebrew is None:
         return None
+
+
+def _candidate_hebrew_years(year: int) -> list[int]:
+    if hebrew is not None:
+        start_year = hebrew.from_gregorian(year, 1, 1)[0]
+        end_year = hebrew.from_gregorian(year, 12, 31)[0]
+        return sorted({start_year, end_year})
+    return [year + 3760, year + 3761]
     try:
         g_year, g_month, g_day = hebrew.to_gregorian(year, month, day_value)
         return date(g_year, g_month, g_day)

@@ -31,6 +31,15 @@ def _input(prompt: str) -> str:
     return input(prompt).strip()
 
 
+def _input_int(prompt: str) -> int | None:
+    raw = _input(prompt)
+    try:
+        return int(raw)
+    except ValueError:
+        _print('Please enter a number.')
+        return None
+
+
 def configure_profile() -> None:
     existing = get_profile()
     _print('\nProfile setup')
@@ -75,15 +84,25 @@ def manage_recurring_events() -> None:
         elif choice == '2':
             name = _input('Event name: ')
             event_type = _input('Event type (birthday/anniversary/custom): ') or 'custom'
-            month, day = parse_month_day(_input('Month/Day (MM/DD): '))
+            try:
+                month, day = parse_month_day(_input('Month/Day (MM/DD): '))
+            except ValueError:
+                _print('Please enter the date as MM/DD.')
+                continue
             contact = _input('Contact info (optional): ')
             add_recurring_event(name, event_type, month, day, contact_info=contact or None)
             _print('Recurring event added.')
         elif choice == '3':
-            event_id = int(_input('Event ID to edit: '))
+            event_id = _input_int('Event ID to edit: ')
+            if event_id is None:
+                continue
             name = _input('Updated event name: ')
             event_type = _input('Updated event type (birthday/anniversary/custom): ') or 'custom'
-            month, day = parse_month_day(_input('Updated Month/Day (MM/DD): '))
+            try:
+                month, day = parse_month_day(_input('Updated Month/Day (MM/DD): '))
+            except ValueError:
+                _print('Please enter the date as MM/DD.')
+                continue
             contact = _input('Updated contact info (optional): ')
             update_recurring_event(
                 event_id,
@@ -95,7 +114,9 @@ def manage_recurring_events() -> None:
             )
             _print('Recurring event updated.')
         elif choice == '4':
-            event_id = int(_input('Event ID to delete: '))
+            event_id = _input_int('Event ID to delete: ')
+            if event_id is None:
+                continue
             delete_recurring_event(event_id)
             _print('Recurring event deleted.')
         elif choice == '0':

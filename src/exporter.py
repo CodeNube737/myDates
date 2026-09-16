@@ -48,8 +48,11 @@ def export_events(
     output_dir: str | Path | None = None,
 ) -> Path:
     today = today or date.today()
-    ensure_runtime_dirs()
-    export_dir = Path(output_dir) if output_dir else EXPORT_DIR
+    if output_dir:
+        export_dir = Path(output_dir)
+    else:
+        ensure_runtime_dirs()
+        export_dir = EXPORT_DIR
     export_dir.mkdir(parents=True, exist_ok=True)
     output_path = export_dir / f'calendar_{today.isoformat()}.csv'
     rows = gather_export_events(today=today, db_path=db_path)
