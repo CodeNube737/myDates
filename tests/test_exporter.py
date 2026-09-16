@@ -12,7 +12,7 @@ from src.scraper import refresh_events_for_profile
 def test_export_events_writes_required_csv_format(tmp_path: Path) -> None:
     db_path = tmp_path / 'calendarEvents.db'
     export_dir = tmp_path / 'exports'
-    add_recurring_event('Jane Smith', 9, 21, contact_info='friend', db_path=db_path)
+    add_recurring_event('Jane Smith', 'birthday', 9, 21, contact_info='friend', db_path=db_path)
     save_profile(UserProfile(name='Alex', religions=['Christianity'], countries=[], astronomy_interests=[]), db_path)
     refresh_events_for_profile(start_year=2026, end_year=2026, db_path=db_path)
 
@@ -31,3 +31,17 @@ def test_export_events_writes_required_csv_format(tmp_path: Path) -> None:
     assert christmas_row[2] == '2026'
     assert christmas_row[4] == 'D'
     assert christmas_row[8] == "DIDN'T START"
+
+
+def test_export_uses_non_zero_padded_day_format(tmp_path: Path) -> None:
+    db_path = tmp_path / 'calendarEvents.db'
+    export_dir = tmp_path / 'exports'
+    add_recurring_event('Project Launch', 'custom', 9, 7, db_path=db_path)
+
+    output = export_events(today=date(2026, 1, 1), db_path=db_path, output_dir=export_dir)
+
+    with output.open(newline='', encoding='utf-8') as handle:
+        rows = list(csv.reader(handle))
+
+    row = next(row for row in rows if row[7] == 'Project Launch')
+    assert row[5] == 'Monday, September 7, 2026'

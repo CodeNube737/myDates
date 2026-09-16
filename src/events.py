@@ -9,6 +9,7 @@ from src.models import RecurringEvent, StoredEvent
 
 def add_recurring_event(
     name: str,
+    event_type: str,
     month: int,
     day: int,
     contact_info: str | None = None,
@@ -17,24 +18,32 @@ def add_recurring_event(
     init_db(db_path)
     with get_connection(db_path) as connection:
         cursor = connection.execute(
-            'INSERT INTO recurring_events (name, month, day, contact_info) VALUES (?, ?, ?, ?)',
-            (name.strip(), month, day, (contact_info or '').strip() or None),
+            'INSERT INTO recurring_events (name, event_type, month, day, contact_info) VALUES (?, ?, ?, ?, ?)',
+            (name.strip(), event_type.strip().lower(), month, day, (contact_info or '').strip() or None),
         )
         connection.commit()
         event_id = cursor.lastrowid
-    return RecurringEvent(id=event_id, name=name.strip(), month=month, day=day, contact_info=(contact_info or '').strip() or None)
+    return RecurringEvent(
+        id=event_id,
+        name=name.strip(),
+        event_type=event_type.strip().lower(),
+        month=month,
+        day=day,
+        contact_info=(contact_info or '').strip() or None,
+    )
 
 
 def list_recurring_events(db_path: str | Path | None = None) -> list[RecurringEvent]:
     init_db(db_path)
     with get_connection(db_path) as connection:
         rows = connection.execute(
-            'SELECT id, name, month, day, contact_info FROM recurring_events ORDER BY month, day, name'
+            'SELECT id, name, event_type, month, day, contact_info FROM recurring_events ORDER BY month, day, name'
         ).fetchall()
     return [
         RecurringEvent(
             id=row['id'],
             name=row['name'],
+            event_type=row['event_type'],
             month=row['month'],
             day=row['day'],
             contact_info=row['contact_info'],
@@ -47,6 +56,7 @@ def update_recurring_event(
     event_id: int,
     *,
     name: str,
+    event_type: str,
     month: int,
     day: int,
     contact_info: str | None = None,
@@ -55,8 +65,8 @@ def update_recurring_event(
     init_db(db_path)
     with get_connection(db_path) as connection:
         connection.execute(
-            'UPDATE recurring_events SET name = ?, month = ?, day = ?, contact_info = ? WHERE id = ?',
-            (name.strip(), month, day, (contact_info or '').strip() or None, event_id),
+            'UPDATE recurring_events SET name = ?, event_type = ?, month = ?, day = ?, contact_info = ? WHERE id = ?',
+            (name.strip(), event_type.strip().lower(), month, day, (contact_info or '').strip() or None, event_id),
         )
         connection.commit()
 
@@ -81,7 +91,7 @@ def build_occurrences(
             except ValueError:
                 continue
             if start_date <= event_date <= end_date:
-                label = f'Birthday: {event.name}' if event.contact_info else event.name
+                label = _display_name(event)
                 occurrences.append(
                     StoredEvent(
                         source_type='recurring',
@@ -93,3 +103,13 @@ def build_occurrences(
                     )
                 )
     return sorted(occurrences, key=lambda item: (item.event_date, item.name))
+
+
+def _display_name(event: RecurringEvent) -> str:
+    prefixes = {
+        'birthday': 'Birthday',
+        'anniversary': 'Anniversary',
+        'custom': None,
+    }
+    prefix = prefixes.get(event.event_type, None)
+    return f'{prefix}: {event.name}' if prefix else event.name

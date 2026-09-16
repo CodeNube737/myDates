@@ -74,16 +74,25 @@ def manage_recurring_events() -> None:
                     print(event)
         elif choice == '2':
             name = _input('Event name: ')
+            event_type = _input('Event type (birthday/anniversary/custom): ') or 'custom'
             month, day = parse_month_day(_input('Month/Day (MM/DD): '))
             contact = _input('Contact info (optional): ')
-            add_recurring_event(name, month, day, contact_info=contact or None)
+            add_recurring_event(name, event_type, month, day, contact_info=contact or None)
             _print('Recurring event added.')
         elif choice == '3':
             event_id = int(_input('Event ID to edit: '))
             name = _input('Updated event name: ')
+            event_type = _input('Updated event type (birthday/anniversary/custom): ') or 'custom'
             month, day = parse_month_day(_input('Updated Month/Day (MM/DD): '))
             contact = _input('Updated contact info (optional): ')
-            update_recurring_event(event_id, name=name, month=month, day=day, contact_info=contact or None)
+            update_recurring_event(
+                event_id,
+                name=name,
+                event_type=event_type,
+                month=month,
+                day=day,
+                contact_info=contact or None,
+            )
             _print('Recurring event updated.')
         elif choice == '4':
             event_id = int(_input('Event ID to delete: '))
@@ -131,8 +140,8 @@ def run_export() -> None:
 
 def main() -> int:
     init_db()
-    session_state = {'running': True}
-    while session_state['running']:
+    running = True
+    while running:
         _print('\nCalendar Events Tracker')
         _print('[1] Profile  [2] Recurring events  [3] Refresh scraped events  [4] Export CSV  [5] Preview export  [0] Exit')
         choice = _input('Choose: ')
@@ -147,7 +156,7 @@ def main() -> int:
         elif choice == '5':
             preview_upcoming_events()
         elif choice == '0':
-            session_state['running'] = False
+            running = False
         else:
             _print('Invalid choice.')
     return 0

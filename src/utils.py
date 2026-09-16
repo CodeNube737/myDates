@@ -43,7 +43,7 @@ def format_month_day(month: int, day: int) -> str:
 
 
 def format_full_date(value: date) -> str:
-    return value.strftime('%A, %B %d, %Y')
+    return f"{value.strftime('%A, %B')} {value.day}, {value.year}"
 
 
 def parse_iso_date(raw: str) -> date:

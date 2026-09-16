@@ -40,6 +40,7 @@ SCHEMA = (
     CREATE TABLE IF NOT EXISTS recurring_events (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
+        event_type TEXT NOT NULL DEFAULT 'custom',
         month INTEGER NOT NULL,
         day INTEGER NOT NULL,
         contact_info TEXT
@@ -80,5 +81,13 @@ def init_db(db_path: str | Path | None = None) -> Path:
     with get_connection(path) as connection:
         for statement in SCHEMA:
             connection.execute(statement)
+        columns = {
+            row['name']
+            for row in connection.execute("PRAGMA table_info(recurring_events)").fetchall()
+        }
+        if 'event_type' not in columns:
+            connection.execute(
+                "ALTER TABLE recurring_events ADD COLUMN event_type TEXT NOT NULL DEFAULT 'custom'"
+            )
         connection.commit()
     return path

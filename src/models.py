@@ -18,6 +18,7 @@ class RecurringEvent:
     name: str
     month: int
     day: int
+    event_type: str = 'custom'
     contact_info: Optional[str] = None
     id: Optional[int] = None
 
