@@ -26,3 +26,9 @@ def test_refresh_events_replaces_existing_category_data(tmp_path: Path) -> None:
     assert second
     assert stored
     assert all(event.event_date.year == 2027 for event in stored)
+
+
+def test_scrape_religious_events_includes_jewish_holidays_when_supported() -> None:
+    events = scrape_religious_events(['Judaism'], 2026, 2026)
+
+    assert any(event.name == 'Holiday: Rosh Hashanah' for event in events)

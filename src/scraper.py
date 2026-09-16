@@ -274,6 +274,11 @@ def _candidate_hijri_years(year: int) -> list[int]:
 def _hebrew_to_gregorian(year: int, month: int, day_value: int) -> date | None:
     if hebrew is None:
         return None
+    try:
+        g_year, g_month, g_day = hebrew.to_gregorian(year, month, day_value)
+        return date(g_year, g_month, g_day)
+    except Exception:
+        return None
 
 
 def _candidate_hebrew_years(year: int) -> list[int]:
@@ -282,11 +287,6 @@ def _candidate_hebrew_years(year: int) -> list[int]:
         end_year = hebrew.from_gregorian(year, 12, 31)[0]
         return sorted({start_year, end_year})
     return [year + 3760, year + 3761]
-    try:
-        g_year, g_month, g_day = hebrew.to_gregorian(year, month, day_value)
-        return date(g_year, g_month, g_day)
-    except Exception:
-        return None
 
 
 def _moon_phase_events(year: int) -> list[StoredEvent]:
