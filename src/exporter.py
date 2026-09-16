@@ -15,6 +15,8 @@ def gather_export_events(
     db_path: str | Path | None = None,
 ) -> list[list[str]]:
     today = today or date.today()
+    # The product requirement is an export window from today through December 31
+    # of the next calendar year, even when that spans almost two full years.
     end_date = date(today.year + 1, 12, 31)
     all_events = [
         *build_occurrences(today, end_date, db_path),

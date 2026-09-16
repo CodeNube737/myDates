@@ -90,13 +90,13 @@ def scrape_religious_events(religions: list[str], start_year: int, end_year: int
                 _event('religious', 'Christianity', 'Holiday: Christmas Day', date(year, 12, 25), True),
             ])
         if 'islam' in selected:
-            for hijri_year in range(year - 581, year - 577):
+            for hijri_year in range(year - 579, year - 577):
                 for name, (month, day_value) in ISLAMIC_DATES.items():
                     converted = _hijri_to_gregorian(hijri_year, month, day_value)
                     if converted and converted.year == year:
                         events.append(_event('religious', 'Islam', name, converted, True))
         if 'judaism' in selected:
-            for hebrew_year in range(year + 3760, year + 3763):
+            for hebrew_year in range(year + 3760, year + 3762):
                 for name, (month, day_value) in JEWISH_DATES.items():
                     converted = _hebrew_to_gregorian(hebrew_year, month, day_value)
                     if converted and converted.year == year:

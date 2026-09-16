@@ -21,14 +21,26 @@ def save_profile(profile: UserProfile, db_path: str | Path | None = None) -> Use
             'ON CONFLICT(id) DO UPDATE SET name = excluded.name',
             (profile.name,),
         )
-        for table, values, column in (
-            ('profile_religions', profile.religions, 'religion'),
-            ('profile_countries', profile.countries, 'country'),
-            ('profile_astronomy_interests', profile.astronomy_interests, 'interest'),
+        for delete_sql, insert_sql, values in (
+            (
+                'DELETE FROM profile_religions WHERE profile_id = 1',
+                'INSERT INTO profile_religions (profile_id, religion) VALUES (1, ?)',
+                profile.religions,
+            ),
+            (
+                'DELETE FROM profile_countries WHERE profile_id = 1',
+                'INSERT INTO profile_countries (profile_id, country) VALUES (1, ?)',
+                profile.countries,
+            ),
+            (
+                'DELETE FROM profile_astronomy_interests WHERE profile_id = 1',
+                'INSERT INTO profile_astronomy_interests (profile_id, interest) VALUES (1, ?)',
+                profile.astronomy_interests,
+            ),
         ):
-            connection.execute(f'DELETE FROM {table} WHERE profile_id = 1')
+            connection.execute(delete_sql)
             connection.executemany(
-                f'INSERT INTO {table} (profile_id, {column}) VALUES (1, ?)',
+                insert_sql,
                 [(value,) for value in values],
             )
         connection.commit()

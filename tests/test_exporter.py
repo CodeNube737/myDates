@@ -13,8 +13,9 @@ def test_export_events_writes_required_csv_format(tmp_path: Path) -> None:
     db_path = tmp_path / 'calendarEvents.db'
     export_dir = tmp_path / 'exports'
     add_recurring_event('Jane Smith', 'birthday', 9, 21, contact_info='friend', db_path=db_path)
-    save_profile(UserProfile(name='Alex', religions=['Christianity'], countries=[], astronomy_interests=[]), db_path)
-    refresh_events_for_profile(start_year=2026, end_year=2026, db_path=db_path)
+    profile = UserProfile(name='Alex', religions=['Christianity'], countries=[], astronomy_interests=[])
+    save_profile(profile, db_path)
+    refresh_events_for_profile(profile, start_year=2026, end_year=2026, db_path=db_path)
 
     output = export_events(today=date(2026, 9, 15), db_path=db_path, output_dir=export_dir)
 
