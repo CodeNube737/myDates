@@ -111,5 +111,5 @@ def _display_name(event: RecurringEvent) -> str:
         'anniversary': 'Anniversary',
         'custom': None,
     }
-    prefix = prefixes.get(event.event_type, None)
+    prefix = prefixes.get(event.event_type, event.event_type.replace('_', ' ').title())
     return f'{prefix}: {event.name}' if prefix else event.name

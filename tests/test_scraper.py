@@ -1,6 +1,8 @@
 from datetime import date
 from pathlib import Path
 
+import pytest
+
 from src.models import UserProfile
 from src.scraper import list_scraped_events, refresh_events_for_profile, scrape_religious_events
 
@@ -29,6 +31,7 @@ def test_refresh_events_replaces_existing_category_data(tmp_path: Path) -> None:
 
 
 def test_scrape_religious_events_includes_jewish_holidays_when_supported() -> None:
+    pytest.importorskip('convertdate')
     events = scrape_religious_events(['Judaism'], 2026, 2026)
 
     assert any(event.name == 'Holiday: Rosh Hashanah' for event in events)

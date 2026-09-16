@@ -292,8 +292,8 @@ def _candidate_hebrew_years(year: int) -> list[int]:
 def _moon_phase_events(year: int) -> list[StoredEvent]:
     if ephem is None:
         return [
-            _event('astronomy', 'lunar phases', 'Astronomy: Full Moon', date(year, 1, 13), False),
-            _event('astronomy', 'lunar phases', 'Astronomy: New Moon', date(year, 1, 29), False),
+            *_approximate_lunar_cycle_events(year, datetime(2000, 1, 21, 4, 40), 'Astronomy: Full Moon'),
+            *_approximate_lunar_cycle_events(year, datetime(2000, 1, 6, 18, 14), 'Astronomy: New Moon'),
         ]
     events: list[StoredEvent] = []
     start = ephem.Date(f'{year}/1/1')
@@ -317,6 +317,8 @@ def _moon_phase_events(year: int) -> list[StoredEvent]:
 
 def _seasonal_events(year: int) -> list[StoredEvent]:
     if ephem is None:
+        # These are approximate civil-calendar fallback dates used only when
+        # ephem is unavailable and exact astronomical calculations cannot run.
         return [
             _event('astronomy', 'seasons', 'Astronomy: March Equinox', date(year, 3, 20), False),
             _event('astronomy', 'seasons', 'Astronomy: June Solstice', date(year, 6, 21), False),
@@ -337,3 +339,17 @@ def _dedupe_events(events: list[StoredEvent]) -> list[StoredEvent]:
     for event in events:
         unique[(event.source_type, event.category, event.name, event.event_date)] = event
     return sorted(unique.values(), key=lambda item: (item.event_date, item.name))
+
+
+def _approximate_lunar_cycle_events(year: int, reference: datetime, name: str) -> list[StoredEvent]:
+    cycle = timedelta(days=29.530588)
+    window_start = datetime(year, 1, 1)
+    window_end = datetime(year + 1, 1, 1)
+    current = reference
+    while current < window_start:
+        current += cycle
+    events: list[StoredEvent] = []
+    while current < window_end:
+        events.append(_event('astronomy', 'lunar phases', name, current.date(), False))
+        current += cycle
+    return events
