@@ -1,6 +1,8 @@
 from datetime import date
 from pathlib import Path
 
+import pytest
+
 from src.events import add_recurring_event, build_occurrences, delete_recurring_event, list_recurring_events, update_recurring_event
 
 
@@ -37,3 +39,10 @@ def test_custom_events_do_not_get_birthday_prefix(tmp_path: Path) -> None:
     occurrences = build_occurrences(date(2026, 1, 1), date(2026, 12, 31), db_path)
 
     assert [occurrence.name for occurrence in occurrences] == ['Anniversary: Wedding Anniversary']
+
+
+def test_invalid_month_day_is_rejected(tmp_path: Path) -> None:
+    db_path = tmp_path / 'calendarEvents.db'
+
+    with pytest.raises(ValueError):
+        add_recurring_event('Bad Date', 'custom', 13, 1, db_path=db_path)

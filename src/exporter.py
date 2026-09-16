@@ -6,7 +6,7 @@ from pathlib import Path
 
 from src.events import build_occurrences
 from src.scraper import list_scraped_events
-from src.utils import EXPORT_DIR, ensure_runtime_dirs, format_full_date
+from src.utils import EXPORT_DIR, format_full_date
 
 
 def gather_export_events(
@@ -51,7 +51,6 @@ def export_events(
     if output_dir:
         export_dir = Path(output_dir)
     else:
-        ensure_runtime_dirs()
         export_dir = EXPORT_DIR
     export_dir.mkdir(parents=True, exist_ok=True)
     output_path = export_dir / f'calendar_{today.isoformat()}.csv'

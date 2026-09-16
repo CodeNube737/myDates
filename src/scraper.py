@@ -303,6 +303,8 @@ def _moon_phase_events(year: int) -> list[StoredEvent]:
         next_full = ephem.next_full_moon(current)
         if next_full >= end:
             break
+        # PyEphem returns UTC datetimes; this app stores the corresponding UTC
+        # calendar date as a timezone-naive local database value.
         events.append(_event('astronomy', 'lunar phases', 'Astronomy: Full Moon', next_full.datetime().date(), False))
         current = ephem.Date(next_full + 1)
     current = start
@@ -310,6 +312,8 @@ def _moon_phase_events(year: int) -> list[StoredEvent]:
         next_new = ephem.next_new_moon(current)
         if next_new >= end:
             break
+        # PyEphem returns UTC datetimes; this app stores the corresponding UTC
+        # calendar date as a timezone-naive local database value.
         events.append(_event('astronomy', 'lunar phases', 'Astronomy: New Moon', next_new.datetime().date(), False))
         current = ephem.Date(next_new + 1)
     return events

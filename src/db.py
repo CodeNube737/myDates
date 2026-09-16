@@ -81,6 +81,8 @@ def init_db(db_path: str | Path | None = None) -> Path:
     with get_connection(path) as connection:
         for statement in SCHEMA:
             connection.execute(statement)
+        # Legacy migration guard for databases created before recurring_events
+        # included the event_type column.
         columns = {
             row['name']
             for row in connection.execute("PRAGMA table_info(recurring_events)").fetchall()

@@ -16,6 +16,7 @@ def add_recurring_event(
     db_path: str | Path | None = None,
 ) -> RecurringEvent:
     init_db(db_path)
+    _validate_month_day(month, day)
     with get_connection(db_path) as connection:
         cursor = connection.execute(
             'INSERT INTO recurring_events (name, event_type, month, day, contact_info) VALUES (?, ?, ?, ?, ?)',
@@ -63,6 +64,7 @@ def update_recurring_event(
     db_path: str | Path | None = None,
 ) -> None:
     init_db(db_path)
+    _validate_month_day(month, day)
     with get_connection(db_path) as connection:
         connection.execute(
             'UPDATE recurring_events SET name = ?, event_type = ?, month = ?, day = ?, contact_info = ? WHERE id = ?',
@@ -113,3 +115,7 @@ def _display_name(event: RecurringEvent) -> str:
     }
     prefix = prefixes.get(event.event_type, event.event_type.replace('_', ' ').title())
     return f'{prefix}: {event.name}' if prefix else event.name
+
+
+def _validate_month_day(month: int, day: int) -> None:
+    date(2000, month, day)
